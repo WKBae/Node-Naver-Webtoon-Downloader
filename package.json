@@ -2,11 +2,12 @@
   "name": "Naver-Webtoon-Downloader",
   "version": "1.0.0",
   "description": "Downloads whole single webtoon in Naver Webtoon.",
+  "license": "GPL-3.0",
   "main": "download.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "WKBae",
+  "author": "WKBae <williambae1@gmail.com> (http://github.wkbae.net/)",
   "dependencies": {
     "async": "^2.0.1",
     "cheerio": "^0.22.0",
