@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+body{
+	font-size:15px;
+	color: #444;
+	background:#F0F0F0;
+}
+div,p,span,h1,h2,h3,h4,h5,h6,table,tr,th,td,img{
+	margin:0;
+	padding:0;
+}
+.wrapper{
+	width:800px;
+	margin:0 auto;
+	padding:10px;
+	background:#FFF;
+}
+#info{
+	display: table;
+}
+.headthumb{
+	display:table-cell;
+	vertical-align:middle;
+}
+#thumbnail{
+	height:90px;
+}
+.detail{
+	display:table-cell;
+	vertical-align:middle;
+	padding-left:10px;
+	width:554px;
+}
+#title{
+	font-size:1.2em;
+	display:inline-block;
+}
+#author{
+	font-size:.9em;
+	color:#777;
+}
+#description{
+	margin-top: 5px;
+	font-size:.9em;
+}
+#list{
+	width:100%;
+	margin-top:15px;
+}
+#list th{
+	font-size:.8em;
+	padding:5px 0;
+	border-top:1px solid #DDD;
+	border-bottom:1px solid #DDD;
+}
+.body td{
+	padding:8px 0;
+	border-bottom:1px solid #EEE;
+	cursor:pointer;
+}
+#list .thumb{
+	text-align:center;
+}
+#list .thumb img{
+	width:71px;
+	height:41px;
+	vertical-align:middle;
+	border:1px solid #DDD;
+}
+#list .no{
+	font-size:.8em;
+	text-align:center;
+	vertical-align:middle;
+	color:#AAA;
+}
+#list .title{
+	vertical-align: middle;
+	font-size:13px;
+	padding-left:10px;
+}
+#viewer{
+	margin:10px;
+}
+#header{
+	border-top:3px solid #AAA;
+	border-bottom:1px solid #DDD;
+	background:#F5F5F5;
+	padding:8px 0 8px 14px;
+}
+#header h3{
+	font-size:1em;
+}
+#content{
+	text-align:center;
+	margin-top:10px;
+}
+.toon{
+	width:700px;
+	display:block;
+	margin:0 auto;
+}
+</style>
+<script src="filelist.js"></script>
+<script>
+function loadEpisode(no) {
+	var viewer = document.getElementById('viewer');
+	viewer.style.display = "none";
+
+	var file = files[no-1];
+
+	document.getElementById('epName').innerText = file.title;
+
+	var content = document.getElementById('content');
+	while(content.lastChild) {
+		content.removeChild(content.lastChild);
+	}
+	for(var i = 0; i < file.images.length; i++) {
+		var img = document.createElement("img");
+		img.src = file.no + "/" + file.images[i];
+		img.className = "toon";
+
+		content.appendChild(img);
+	}
+	viewer.style.display = null;
+
+	return file.title;
+}
+
+window.onpopstate = function(e) {
+	if(e && e.state && e.state.no) {
+		loadEpisode(e.state.no);
+	} else if(getURLParameter('no')) {
+		loadEpisode(getURLParameter('no'));
+	} else {
+		var viewer = document.getElementById('viewer');
+		viewer.style.display = "none";
+	}
+};
+
+function getURLParameter(name) {
+	return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search) || [null, ''])[1].replace(/\+/g, '%20')) || null;
+}
+
+window.onload = function() {
+	document.title = document.getElementById('title').innerText;
+
+	document.getElementById('list').addEventListener("click", function(e) {
+		var node = e.target;
+		while(node != this && !node.dataset['no']) node = node.parentNode;
+		if(node.dataset['no']) {
+			var no = node.dataset['no'] | 0;
+			var title = loadEpisode(no);
+
+			window.scrollTo(0, 0);
+			document.title = title + " - " + document.getElementById('title').innerText;
+			history.pushState({'no': no}, title, "?no=" + no);
+		}
+	});
+
+	var no = getURLParameter('no');
+	if(no) {
+		loadEpisode(no);
+	}
+};
+</script>
+</head>
+<body>
+<div class="wrapper">
+	<div id="info">
+		<div class="headthumb">
+			<img id="thumbnail" src="thumb.jpg">
+		</div>
+		<div class="detail">
+			<h2 id="title"></h2>
+			<span id="author"></span>
+			<p id="description"></p>
+		</div>
+	</div>
+
+	<div id="viewer" style="display:none">
+		<div id="header"><h3 id="epName"></h3></div>
+		<div id="content"></div>
+	</div>
+
+	<table id="list">
+		<colgroup><col width="99"><col width="20"><col width="*"></colgroup>
+		<thead><tr><th>이미지</th><th>화</th><th>제목</th></tr></thead>
+		<tbody class="body"></tbody>
+	</table>
+</div>
+</body>
+</html>
