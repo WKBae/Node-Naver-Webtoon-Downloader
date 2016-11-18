@@ -331,7 +331,7 @@ function* imageTaskGenerator(items, referer, dir) {
 
 				var title = $info.find("h2").text().replace(/^\s\s*/gm, "").replace(/\s*\s$/gm, "");
 				var writer = $info.find("h2 .wrt_nm").text().replace(/^\s\s*/gm, "").replace(/\s*\s$/gm, "");
-				title = title.replace(new RegExp(writer + "$"), "");
+				title = title.replace(new RegExp(writer.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&") + "$"), "");
 
 				var desc = $info.find("p").html();//.replace(/<br[^>]*>/gi, "\n").replace(/^\s\s*/gm, "").replace(/\s*\s$/gm, "");
 
