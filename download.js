@@ -1,10 +1,17 @@
 'use strict';
-const request = require('request').defaults({'followRedirect': false, 'timeout': 10 * 1000}),
+const req = require('request'),
 	cheerio = require('cheerio'),
 	async = require('async'),
 	path = require('path'),
 	fs = require('graceful-fs'),
-	ProgressBar = require('progress');
+	ProgressBar = require('progress'),
+	rl = require('readline').createInterface({
+		input: process.stdin,
+		output: process.stdout
+	});
+
+var jar = req.jar();
+const request = req.defaults({'followRedirect': false, 'timeout': 10 * 1000, 'jar': jar});
 
 const OUTPUT_DIR = "output";
 
@@ -14,14 +21,9 @@ if(process.argv.length < 3 || isNaN(process.argv[2])) {
 }
 
 if (process.platform === "win32") {
-	require("readline")
-		.createInterface({
-			input: process.stdin,
-			output: process.stdout
-		})
-		.on("SIGINT", function () {
-			process.emit("SIGINT");
-		});
+	rl.on("SIGINT", function () {
+		process.emit("SIGINT");
+	});
 }
 
 var terminate = false;
@@ -43,6 +45,7 @@ function tickProgress() {
 // Generator function for parallel task
 function* webtoonTaskGenerator(titleId, last) {
 	// runs through the list, from 1 to last(inclusively), and generate(yield) async function
+	var doingAuthInput = false;
 	for(let i = 1; i <= last; i++) {
 		yield function webtoonGetter(callback) {
 			if(terminate) {
@@ -106,6 +109,28 @@ function* webtoonTaskGenerator(titleId, last) {
 							});
 						});
 					});
+				} else if(res.statusCode == 302) {
+					if(!doingAuthInput) {
+						doingAuthInput = true;
+						console.log("Failed to load toon#" + i + ", trying with user auth info can help.");
+						rl.question("NID_AUT: ", (aut) => {
+							rl.question("NID_SES: ", (ses) => {
+								jar.setCookie(request.cookie("NID_AUT=" + aut), "http://comic.naver.com");
+								jar.setCookie(request.cookie("NID_SES=" + ses), "http://comic.naver.com");
+								doingAuthInput = false;
+								webtoonGetter(callback); // Retry with session information
+							})
+						});
+					} else {
+						//console.log("Failed to load toon#" + i + ". Waiting until input is done...");
+						(function waitInputDone() {
+							if(doingAuthInput) {
+								async.setImmediate(waitInputDone);
+							} else {
+								webtoonGetter(callback);
+							}
+						})();
+					}
 				} else {
 					callback(new Error("Unknown response code " + res.statusCode + " while requesting toon#" + i));
 				}
