@@ -107,7 +107,7 @@ function* webtoonTaskGenerator(titleId, last) {
 						});
 					});
 				} else {
-					callback(new Error("Unknow response code " + res.statusCode + " while requesting toon#" + i));
+					callback(new Error("Unknown response code " + res.statusCode + " while requesting toon#" + i));
 				}
 			});
 		};
