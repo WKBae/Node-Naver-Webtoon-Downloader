@@ -42,6 +42,20 @@ function tickProgress() {
 	bar.tick(1);
 }
 
+/*function applyCookie(setCookieHeader) {
+	if(!setCookieHeader) return;
+	if(typeof setCookieHeader === 'string') {
+		var cookies = setCookieHeader.split(/, ?/g);
+		for(var cookie of cookies) {
+			jar.setCookie(request.cookie(cookie), "http://comic.naver.com");
+		}
+	} else {
+		for(var cookie of setCookieHeader) {
+			applyCookie(cookie);
+		}
+	}
+}*/
+
 // Generator function for parallel task
 function* webtoonTaskGenerator(titleId, last) {
 	// runs through the list, from 1 to last(inclusively), and generate(yield) async function
@@ -57,6 +71,9 @@ function* webtoonTaskGenerator(titleId, last) {
 //					console.error("ERROR:", err);
 					return callback(err);
 				}
+
+//				applyCookie(res.headers['set-cookie']);
+
 				if(res.statusCode === 200) {
 					var $ = cheerio.load(html);
 					var $images = $(".wt_viewer img[id^=content_image_]");
@@ -189,6 +206,8 @@ function* imageTaskGenerator(items, referer, dir) {
 						request.head(options)
 							.on('error', cb)
 							.on('response', (response) => {
+//								applyCookie(response.headers['set-cookie']);
+
 								if(stat.size != response.headers['content-length']) {
 									downloadImage();
 								} else {
@@ -203,6 +222,8 @@ function* imageTaskGenerator(items, referer, dir) {
 						request.get(options)
 							.on('error', cb)
 							.on('response', (response) => {
+///								applyCookie(response.headers['set-cookie']);
+				
 								if(response.statusCode == 200) {
 									response
 										.pipe(fs.createWriteStream(target))
